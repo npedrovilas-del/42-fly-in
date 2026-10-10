@@ -2,7 +2,7 @@ from models import StartHub, EndHub, Hub, Conections
 
 path = "/home/npe/42/Fly-in/maps/hard/02_capacity_hell.txt"
 
-def extract(path: str)-> None:
+def extract_file(path: str)-> None:
     hub = {}
     try:
         with open(path) as f:
