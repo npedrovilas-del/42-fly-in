@@ -27,8 +27,6 @@ def dijkstra(start , end , zones: dict, connections: dict) -> list[str]:
                 cost[neighbor] = new_cost
                 previous[neighbor] = zone
                 heapq.heappush(queue, (new_cost, neighbor))
-
-    print(current_cost)
     if end.name not in previous:
         return []
     path = [end.name]
