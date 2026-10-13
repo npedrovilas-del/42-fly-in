@@ -26,7 +26,6 @@ def run(drone: Drone, path: list, stack: dict, zones: Hub):
             drone.position = x
             break
     print(drone)
-    print(zones[x])
     return drone, stack
 
 
@@ -44,12 +43,14 @@ if __name__ == "__main__":
         stack = {}
         for drone in drones_list:
             stack[drone.id_drone] = [drone.position]
-        while drones_list[0].position != "goal":
+        finished = False
+        while not finished:
             for drone in drones_list:
                 result, stack= run(drone, path, stack, zones)
                 if result is None:
                     continue
-                if result.position == "goal":
+                if result.position == "goal" and result.id_drone == int(1):
+                    finished = True
                     break
                 stack.setdefault(drone.id_drone, []).append(result.position)
                 drone.position = result.position
