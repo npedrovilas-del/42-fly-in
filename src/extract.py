@@ -24,6 +24,7 @@ def extract_file(path: str)-> None:
             if data[i].startswith("connection:"):
                 connection = extract_connection(data[i])
                 connections.setdefault(connection.name_1, []).append(connection)
+                connections.setdefault(connection.name_2, []).append(connection)
             i += 1
     except ValueError as e:
         print(e)
@@ -38,7 +39,7 @@ def extract_connection(str: str):
         proc_metadata = dict(item.split("=") for item in f.split(" "))
     else:
         proc_metadata = {}
-    return Conections(name_1 = names[0], name_2 = names[1], capacity = proc_metadata.get("max_link_capacity", 1))
+    return Conections(name_1 = names[0], name_2 = names[1], capacity = proc_metadata.get("max_link_capacity", 1), moves = 0)
 
 def extract_hub(str: str):
     total = str.split("[")
@@ -62,6 +63,3 @@ def extract_number_drones(str: str):
         return(number)
     except ValueError as e:
         print(e)
-        
-if __name__ == "__main__":
-    extract(path)

@@ -14,9 +14,11 @@ class Conections(BaseModel):
     name_1: str
     name_2: str
     capacity: int = Field(default=int(1))
+    move: int = Field(default=int(0))
 
 class Drone(BaseModel):
     id_drone: int
     position: str
     path: list
-
+    transit: str | None = Field(default=None)
+    goal: int = Field(default=0)
