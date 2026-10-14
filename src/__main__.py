@@ -1,7 +1,7 @@
 from .extract import extract_file
 import argparse
 from .generate import dijkstra
-from .models import Drone, Hub
+from .models import Drone, Hub, Conections
 
 
 def parse_args() -> argparse.Namespace:
