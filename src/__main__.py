@@ -1,7 +1,7 @@
-from extract import extract_file
+from .extract import extract_file
 import argparse
-from generate import dijkstra
-from models import Drone, Hub
+from .generate import dijkstra
+from .models import Drone, Hub
 
 
 def parse_args() -> argparse.Namespace:
@@ -10,7 +10,7 @@ def parse_args() -> argparse.Namespace:
         description="Path File to the Maze "
     )
     parser.add_argument(
-        "path",
+        "--path",
         default="data/input/functions_definition.json",
     )
     return parser.parse_args()

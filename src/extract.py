@@ -1,4 +1,4 @@
-from models import Hub, Conections
+from .models import Hub, Conections
 
 path = "/home/npe/42/Fly-in/maps/hard/02_capacity_hell.txt"
 
