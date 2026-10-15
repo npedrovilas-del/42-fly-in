@@ -5,7 +5,7 @@ class Hub(BaseModel):
     name: str
     pos_x: int
     pos_y: int
-    color: str
+    color: str | None = Field(default=None)
     drones: int = Field(default=0)
     capacity: int | None = Field(default=1)
     zone: str = Field(default="normal")
@@ -22,3 +22,4 @@ class Drone(BaseModel):
     path: list
     transit: str | None = Field(default=None)
     goal: int = Field(default=0)
+

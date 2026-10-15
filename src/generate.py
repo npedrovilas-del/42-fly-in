@@ -37,3 +37,70 @@ def dijkstra(start , end , zones: dict, connections: dict) -> list[str]:
     while path[0] != start.name:
         path.insert(0, previous[path[0]])
     return path
+
+
+def run(drones_list: list, path: list, stack: dict, zones: Hub, end: Hub, connections: Connections):
+    i = 0
+    finished = False
+    while not finished:
+        cont = 0
+        f = ""
+        for pos in connections:
+            for hubs in connections[pos]:
+                hubs.move = 0
+        for drone in drones_list:
+            result, stack= move_drones(drone, path, stack, zones, end, connections)
+            if result is None:
+                continue
+            if result.transit is not None:
+                f += f"D{result.id_drone}-{result.position}-{result.transit} "
+                continue
+            if result.position == end.name and result.id_drone == int(1):
+                f += f"D{result.id_drone}-{result.position} "
+                drone.position = result.position
+                finished = True
+                break
+            stack.setdefault(drone.id_drone, []).append(result.position)
+            if drone.position == end.name and result.goal != 1:
+                f += f"D{result.id_drone}-{result.position} "
+                result.goal = 1
+                continue
+            if drone.position == end.name and result.goal == 1:
+                continue
+            f += f"D{result.id_drone}-{result.position} "
+            drone.position = result.position
+        i += 1
+        f_clean = f.strip()
+        print(f_clean)
+    print("Moves", i)
+    print("All completed all drones on the goal destination")
+    return True
+
+
+def move_drones(drone: Drone, path: list, stack: dict, zones: Hub, end: Hub, connections: Connections):
+    if drone.transit is not None:
+        for i in connections[drone.position]:
+            if i.name_1 == drone.transit or i.name_2 == drone.transit:
+                i.move += 1
+        zones[drone.position].drones -= 1
+        drone.position = drone.transit
+        drone.transit = None
+        return drone, stack
+    for x in path:
+        if x != drone.position and x not in stack[drone.id_drone]:
+            for i in connections[drone.position]:
+                if i.name_1 == x or i.name_2 == x:
+                    link = i
+                    if i.move >= i.capacity:
+                        return None, stack
+            if zones[x].capacity <= zones[x].drones and x != end.name:
+                return None, stack
+            zones[x].drones += 1
+            link.move += 1
+            if zones[x].zone == "restricted":
+                drone.transit = x
+                return drone, stack
+            zones[drone.position].drones -= 1
+            drone.position = x
+            break
+    return drone, stack
