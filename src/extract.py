@@ -87,20 +87,23 @@ def extract_connection(str: str) -> Connections:
 
     Returns a Connection class already somewhat parsed and pydantic verified
     """
-    total = str.split(" ")
-    if len(total) < 2:
+    total = str.split("[")
+    first = total[0].split()
+    if len(first) < 2:
         raise ValueError("Not valid Connection")
-    names = total[1].strip().split("-")
+    names = first[1].strip().split("-")
     if len(names) != 2:
-        raise ValueError("Connection: cannot link a zone to itself")
+        raise ValueError("Connection: must have exactly two zone names")
     if names[0] == names[1]:
-        raise ValueError("Connection cant have 2 equal names")
-    if len(total) > 2:
+        raise ValueError("Connection: cannot link a zone to itself")
+    if len(total) > 1:
         if not str.strip().endswith("]"):
             raise ValueError("Connection: Invalid brackets on closing")
-        metadata = total[2].replace("]\n", "")
-        f = metadata.replace("[", "")
-        proc_metadata = dict(item.split("=") for item in f.split(" "))
+        metadata = total[1].strip().replace("]", "")
+        try:
+            proc_metadata = dict(item.split("=") for item in metadata.split())
+        except ValueError:
+            raise ValueError("Connection: The metadata should be correctly formated")
         try:
             max_link = int(proc_metadata.get("max_link_capacity", "1"))
         except ValueError:
