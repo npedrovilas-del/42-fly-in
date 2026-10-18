@@ -21,6 +21,7 @@ def extract_file(path: str) -> tuple[Hub, Hub, int,
         line_counter = 0
         drones = None
         while i < len(data):
+            data[i] = data[i].split("#")[0]
             if data[i].startswith("nb"):
                 if line_counter != 0:
                     raise ValueError("Number of drones not on top of the file")
@@ -103,7 +104,8 @@ def extract_connection(str: str) -> Connections:
         try:
             proc_metadata = dict(item.split("=") for item in metadata.split())
         except ValueError:
-            raise ValueError("Connection: The metadata should be correctly formated")
+            raise ValueError("Connection: The metadata should be"
+                             " correctly formatted")
         try:
             max_link = int(proc_metadata.get("max_link_capacity", "1"))
         except ValueError:
@@ -126,8 +128,8 @@ def extract_hub(str: str) -> Hub:
     total = str.strip().split("[")
     info = total[0].split()
     if len(info) != 4:
-        raise ValueError("Hubs should have bora3"
-                         " parameters name, pos_x, pos_y")
+        raise ValueError("Hubs should have 3 "
+                         "parameters: name, pos_x, pos_y")
     name = info[1]
     for veri in name:
         if veri == "-":
@@ -144,7 +146,8 @@ def extract_hub(str: str) -> Hub:
         try:
             proc_metadata = dict(item.split("=") for item in metadata.split())
         except ValueError:
-            raise ValueError("HUBS: The metadata should be correctly formated")
+            raise ValueError("HUBS: The metadata should be"
+                             " correctly formatted")
         for key in proc_metadata:
             if key != "zone" and key != "color" and key != "max_drones":
                 raise ValueError("HUBS: Invalid metadata KEY")
@@ -172,7 +175,7 @@ def extract_number_drones(str: str) -> int:
 
     From file and returns parsed and verified with the constraints
     """
-    n = str.split(" ")
+    n = str.split()
     if len(n) != 2:
         raise ValueError("Should have the parameter of number of drones only")
     try:
