@@ -1,9 +1,10 @@
+MAP = maps/challenger/01_the_impossible_dream.txt
 install:
 	uv sync
 
 run:
-	uv run python -m src \
-		--path /home/npe/42/Fly-in/maps/challenger/01_the_impossible_dream.txt
+	SDL_VIDEODRIVER=wayland uv run python -m src \
+		--path $(MAP)
 
 debug:
 	uv run python -m pdb -m src

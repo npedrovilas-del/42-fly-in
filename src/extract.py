@@ -1,9 +1,17 @@
-from .models import Hub, Conections
+from .models import Hub, Connections
 import sys
 
-def extract_file(path: str)-> None:
-    zones = {}
-    connections = {}
+
+def extract_file(path: str) -> tuple[Hub, Hub, int,
+                                     dict[str, Hub],
+                                     dict[str, list[Connections]]]:
+    """Extracts and returns all the information of the input.
+
+    Already taking into account possible input Errors
+    that may occur and raising ValueErrors with custom messages
+    """
+    zones: dict[str, Hub] = {}
+    connections: dict[str, list[Connections]] = {}
     try:
         with open(path) as f:
             data = list(f)
@@ -14,18 +22,18 @@ def extract_file(path: str)-> None:
         drones = None
         while i < len(data):
             if data[i].startswith("nb"):
-                if line_counter  != 0:
+                if line_counter != 0:
                     raise ValueError("Number of drones not on top of the file")
                 drones = extract_number_drones(data[i])
             elif data[i].startswith("start_hub:"):
                 line_counter += 1
-                if start != None:
+                if start is not None:
                     raise ValueError("HUBS: Cannot have 2 starts")
                 start = extract_hub(data[i])
                 zones[start.name] = start
             elif data[i].startswith("end_hub:"):
                 line_counter += 1
-                if end != None:
+                if end is not None:
                     raise ValueError("HUBS: Cannot have 2 ends")
                 end = extract_hub(data[i])
                 zones[end.name] = end
@@ -38,23 +46,28 @@ def extract_file(path: str)-> None:
             elif data[i].startswith("connection:"):
                 line_counter += 1
                 connection = extract_connection(data[i])
-                if connection.name_1 not in zones or connection.name_2 not in zones:
+                if (connection.name_1 not in zones or
+                        connection.name_2 not in zones):
                     raise ValueError("Connections: Connection not in hubs")
                 for c in connections.get(connection.name_1, []):
-                    if c.name_1 == connection.name_2 or c.name_2 == connection.name_2:
-                        raise ValueError("Connections: Duplication of connections")
-                connections.setdefault(connection.name_1, []).append(connection)
-                connections.setdefault(connection.name_2, []).append(connection)
+                    if (c.name_1 == connection.name_2 or
+                            c.name_2 == connection.name_2):
+                        raise ValueError(
+                            "Connections: Duplication of connections")
+                connections.setdefault(
+                    connection.name_1, []).append(connection)
+                connections.setdefault(
+                    connection.name_2, []).append(connection)
             elif data[i].startswith("#") or data[i].strip() == "":
                 pass
             else:
                 raise ValueError("Trash in the Input File")
             i += 1
-        if start == None:
+        if start is None:
             raise TypeError("Error no start position")
-        if end == None:
+        if end is None:
             raise TypeError("Error no end position")
-        if drones == None:
+        if drones is None:
             raise TypeError("No number of drones defined")
     except ValueError as e:
         print(f"Error Line {i + 1}: {e}")
@@ -65,7 +78,11 @@ def extract_file(path: str)-> None:
     return (start, end, drones, zones, connections)
 
 
-def extract_connection(str: str):
+def extract_connection(str: str) -> Connections:
+    """Auxiliary function that extracts the connections from file.
+
+    Returns a Connection class already somewhat parsed and pydantic verified
+    """
     total = str.split(" ")
     names = total[1].strip().split("-")
     if len(total) > 2:
@@ -77,15 +94,21 @@ def extract_connection(str: str):
         try:
             max_link = int(proc_metadata.get("max_link_capacity", "1"))
         except ValueError:
-            raise ValueError("Connection: Max link capacity should be a integer")
+            raise ValueError(
+                "Connection: Max link capacity should be an integer")
         if max_link < 1:
             raise ValueError("Connection: Link capacity not valid")
     else:
         proc_metadata = {}
-    return Conections(name_1 = names[0], name_2 = names[1], capacity = proc_metadata.get("max_link_capacity", 1))
+    return Connections(name_1=names[0], name_2=names[1],
+                       capacity=int(proc_metadata.get("max_link_capacity", 1)))
 
 
-def extract_hub(str: str):
+def extract_hub(str: str) -> Hub:
+    """Auxiliary function that extracts the hubs from file.
+
+    Returns a Hub class already somewhat parsed and pydantic verified
+    """
     name = ""
     total = str.strip().split("[")
     info = total[0].split()
@@ -97,7 +120,7 @@ def extract_hub(str: str):
         x = int(info[2])
         y = int(info[3])
     except ValueError:
-        raise ValueError("Coordinates should be a integer")
+        raise ValueError("Coordinates should be integers")
     if len(total) > 1:
         if not str.strip().endswith("]"):
             raise ValueError("HUBS: Incorrect brackets on Hub")
@@ -105,20 +128,29 @@ def extract_hub(str: str):
         try:
             proc_metadata = dict(item.split("=") for item in metadata.split())
         except ValueError:
-            raise ValueError("HUBS: The metadata should be formated corrected")
-        if proc_metadata.get("zone", "normal") not in ["restricted", "normal", "priority", "blocked"]:
+            raise ValueError("HUBS: The metadata should be correctly formated")
+        if proc_metadata.get("zone", "normal") not in [
+                "restricted", "normal", "priority", "blocked"]:
             raise ValueError("HUBS: Zone type Invalid")
         try:
             max_drones = int(proc_metadata.get("max_drones", 1))
         except ValueError:
-            raise ValueError("Hubs: Max drones shoul be a intenger")
+            raise ValueError("Hubs: Max drones should be an intenger")
         if max_drones < 1:
-            raise ValueError("HUBS: Number os Max Drones not valid")
+            raise ValueError("HUBS: Number of Max Drones not valid")
     else:
         proc_metadata = {}
-    return Hub(color = proc_metadata.get("color", None) , pos_x = x, pos_y = y, name = name, capacity = proc_metadata.get("max_drones", 1), zone = proc_metadata.get("zone", "normal"))
+    return Hub(color=proc_metadata.get("color", None),
+               pos_x=x, pos_y=y, name=name,
+               capacity=int(proc_metadata.get("max_drones", 1)),
+               zone=proc_metadata.get("zone", "normal"))
 
-def extract_number_drones(str: str):
+
+def extract_number_drones(str: str) -> int:
+    """Auxiliary function that extracts the number of drones.
+
+    From file and returns parsed and verified with the constraints
+    """
     n = ""
     for i in str:
         if i.isnumeric() or i == "-":
@@ -128,7 +160,7 @@ def extract_number_drones(str: str):
     try:
         f = int(n)
     except ValueError:
-        raise ValueError("Number of drones should be a integer")
+        raise ValueError("Number of drones should be an integer")
     if f <= 0:
         raise ValueError("Number of drones has to be greater than 0")
     return f
