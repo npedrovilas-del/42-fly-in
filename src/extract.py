@@ -92,7 +92,9 @@ def extract_connection(str: str) -> Connections:
         raise ValueError("Not valid Connection")
     names = total[1].strip().split("-")
     if len(names) != 2:
-        raise ValueError("Should have two names on connection")
+        raise ValueError("Connection: cannot link a zone to itself")
+    if names[0] == names[1]:
+        raise ValueError("Connection cant have 2 equal names")
     if len(total) > 2:
         if not str.strip().endswith("]"):
             raise ValueError("Connection: Invalid brackets on closing")
