@@ -30,12 +30,16 @@ def extract_file(path: str) -> tuple[Hub, Hub, int,
                 if start is not None:
                     raise ValueError("HUBS: Cannot have 2 starts")
                 start = extract_hub(data[i])
+                if start.name in zones:
+                    raise ValueError("Start: Duplicated start name")
                 zones[start.name] = start
             elif data[i].startswith("end_hub:"):
                 line_counter += 1
                 if end is not None:
                     raise ValueError("HUBS: Cannot have 2 ends")
                 end = extract_hub(data[i])
+                if end.name in zones:
+                    raise ValueError("End: Duplicated end name")
                 zones[end.name] = end
             elif data[i].startswith("hub:"):
                 line_counter += 1
@@ -84,7 +88,11 @@ def extract_connection(str: str) -> Connections:
     Returns a Connection class already somewhat parsed and pydantic verified
     """
     total = str.split(" ")
+    if len(total) < 2:
+        raise ValueError("Not valid Connection")
     names = total[1].strip().split("-")
+    if len(names) != 2:
+        raise ValueError("Should have two names on connection")
     if len(total) > 2:
         if not str.strip().endswith("]"):
             raise ValueError("Connection: Invalid brackets on closing")
@@ -112,6 +120,9 @@ def extract_hub(str: str) -> Hub:
     name = ""
     total = str.strip().split("[")
     info = total[0].split()
+    if len(info) != 4:
+        raise ValueError("Hubs should have bora3"
+                         " parameters name, pos_x, pos_y")
     name = info[1]
     for veri in name:
         if veri == "-":
@@ -151,14 +162,11 @@ def extract_number_drones(str: str) -> int:
 
     From file and returns parsed and verified with the constraints
     """
-    n = ""
-    for i in str:
-        if i.isnumeric() or i == "-":
-            n += i
-        else:
-            continue
+    n = str.split(" ")
+    if len(n) != 2:
+        raise ValueError("Should have the parameter of number of drones only")
     try:
-        f = int(n)
+        f = int(n[1])
     except ValueError:
         raise ValueError("Number of drones should be an integer")
     if f <= 0:

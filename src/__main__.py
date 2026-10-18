@@ -27,8 +27,11 @@ if __name__ == "__main__":
             drone = Drone(id_drone=i, position=start.name)
             drones_list.append(drone)
             i += 1
-        multiple_paths(drones_list, start, end, zones, connections)
+        multiple_paths(drones_list, start, end, zones, connections, drones)
         run(drones_list, zones, end, connections, start)
     except ValueError as e:
+        print(e)
+        sys.exit(1)
+    except OSError as e:
         print(e)
         sys.exit(1)

@@ -3,9 +3,10 @@ from .models import Hub, Connections, Drone
 from .visual import running
 
 
-def multiple_paths(drones: list[Drone], start: Hub, end: Hub,
+def multiple_paths(drones_list: list[Drone], start: Hub, end: Hub,
                    zones: dict[str, Hub],
-                   connections: dict[str, list[Connections]]) -> None:
+                   connections: dict[str, list[Connections]],
+                   drones: int) -> None:
     """Forms each individual path for a drone.
 
     Makes sure it takes into account the return reservations
@@ -13,9 +14,10 @@ def multiple_paths(drones: list[Drone], start: Hub, end: Hub,
     type of zone but the wait because of
     other drones wait time
     """
+    maxi: int = drones * len(zones) * 2
     reserv: dict[tuple[str | tuple[str, ...], int], int] = {}
-    for drone in drones:
-        path_new = time_dijkstra(start, end, zones, connections, reserv)
+    for drone in drones_list:
+        path_new = time_dijkstra(start, end, zones, connections, reserv, maxi)
         if path_new is None:
             raise ValueError("No path Available")
         c = 0
@@ -39,7 +41,8 @@ def multiple_paths(drones: list[Drone], start: Hub, end: Hub,
 def time_dijkstra(start: Hub, end: Hub, zones: dict[str, Hub],
                   connections: dict[str, list[Connections]],
                   reserv: dict[tuple[str | tuple[str, ...],
-                               int], int]) -> list[str] | None:
+                               int], int],
+                  maxi: int) -> list[str] | None:
     """Algorithm that chooses the lowest cost path to each drone.
 
     Takes into account wait, type of zone and link capacity,
@@ -49,13 +52,13 @@ def time_dijkstra(start: Hub, end: Hub, zones: dict[str, Hub],
     visited = set()
     while heap:
         turn, priority_value, zone, path = heapq.heappop(heap)
-        if turn > 200:
-            continue
         if (zone, turn) in visited:
             continue
         visited.add((zone, turn))
         if zone == end.name:
             return path
+        if turn == maxi:
+            return None
         for x in connections.get(zone, []):
             if x.name_1 == zone:
                 neighbor = x.name_2
@@ -114,8 +117,8 @@ def run(drones_list: list[Drone], zones: dict[str, Hub], end: Hub,
         print(f.strip())
         counter += 1
     print(
-        f"All completed, all {
-            len(drones_list)} drones on the goal destination")
+        f"All completed, all "
+        f"{len(drones_list)} drones on the goal destination")
     print("Moves", counter - 1)
     try:
         choice = input("Watch simulation of the moves (Y/N)")
