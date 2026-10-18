@@ -42,9 +42,9 @@ def running(zones: dict[str, Hub], connections: dict[str, list[Connections]],
     pygame.init()
     screen = pygame.display.set_mode((width_page, height_page))
     pygame.display.set_caption("Fly In")
-    a = pygame.image.load("/home/npe/42/Fly-in/src/Img/icon.png")
+    a = pygame.image.load("src/Img/icon.png")
     test_obj = pygame.image.load(
-        "/home/npe/42/Fly-in/src/Img/drone.png").convert_alpha()
+        "src/Img/drone.png").convert_alpha()
     drone = pygame.transform.scale_by(test_obj, (0.09, 0.09))
     pygame.display.set_icon(a)
     clock = pygame.time.Clock()
@@ -57,8 +57,10 @@ def running(zones: dict[str, Hub], connections: dict[str, list[Connections]],
         screen.fill("black")
         for i in zones:
             colour = zones[i].color
-            if colour is None or colour == "rainbow":
+            if colour is None:
                 colour = "black"
+            if colour == "rainbow":
+                colour = "pink"
             r = pygame.Rect(0, 0, 40, 40)
             r.center = (
                 ((zones[i].pos_x - min_x) * prop_x + Margin,
