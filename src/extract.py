@@ -142,6 +142,11 @@ def extract_hub(str: str) -> Hub:
             proc_metadata = dict(item.split("=") for item in metadata.split())
         except ValueError:
             raise ValueError("HUBS: The metadata should be correctly formated")
+        for key in proc_metadata:
+            if key != "zone" and key != "color" and key != "max_drones":
+                raise ValueError("HUBS: Invalid metadata KEY")
+        if len(metadata.split()) != len(proc_metadata):
+            raise ValueError("HUBS: Two repetitive metadata key")
         if proc_metadata.get("zone", "normal") not in [
                 "restricted", "normal", "priority", "blocked"]:
             raise ValueError("HUBS: Zone type Invalid")
