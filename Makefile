@@ -3,7 +3,7 @@ install:
 	uv sync
 
 run:
-	SDL_VIDEODRIVER=wayland uv run python -m src \
+	uv run python -m src \
 		--path $(MAP)
 
 debug:
